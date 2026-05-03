@@ -731,6 +731,32 @@ body {
     cursor: pointer;
 }
 
+/* --- Year Markers --- */
+.year-markers {
+    position: relative;
+    height: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+.year-marker {
+    position: absolute;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.15rem 0.3rem;
+    border-radius: 3px;
+    transition: color 0.15s ease, font-weight 0.15s ease;
+}
+
+.year-marker:hover {
+    color: var(--color-accent);
+}
+
+.year-marker.active {
+    color: var(--color-accent);
+    font-weight: 700;
+}
+
 /* --- CSS Panel --- */
 .css-panel {
     margin-top: 1.25rem;

@@ -19,9 +19,29 @@ function renderSimulatorTab(){
     var empty=document.getElementById('simulator-empty'),content=document.getElementById('simulator-content');
     if(!appState.products||!appState.products.length){empty.classList.remove('hidden');content.classList.add('hidden');return;}
     empty.classList.add('hidden');content.classList.remove('hidden');
+
+    // Calculate total simulation months (capped by Round 8)
+    var totalMonths = (8 - appState.round) * 12;
     playState.currentMonth=0;playState.playing=false;
     if(playState.intervalId){clearInterval(playState.intervalId);playState.intervalId=null;}
+
+    // Edge case: Round 8 parsed — no future rounds to simulate
+    if(totalMonths<=0){
+        document.getElementById('month-scrubber').disabled=true;
+        document.getElementById('play-btn').disabled=true;
+        document.getElementById('month-label').textContent='This is the final round \u2014 no future rounds to simulate.';
+        document.getElementById('year-markers').innerHTML='';
+        buildMap();populateFocusDropdown();initHideCompetitorsToggle();
+        return;
+    }
+
+    // Set scrubber max dynamically
+    document.getElementById('month-scrubber').max=totalMonths;
+    document.getElementById('month-scrubber').disabled=false;
+    document.getElementById('play-btn').disabled=false;
+
     buildMap();populateFocusDropdown();initTimeControls();initHideCompetitorsToggle();
+    buildYearMarkers(totalMonths);
     scrubToMonth(0);
 }
 
@@ -110,7 +130,9 @@ function initTimeControls(){
 }
 
 function startPlay(){
-    if(playState.currentMonth>=12)playState.currentMonth=0;
+    // totalMonths is the max value of the scrubber (set dynamically at render)
+    var totalMonths=parseInt(document.getElementById('month-scrubber').max)||12;
+    if(playState.currentMonth>=totalMonths)playState.currentMonth=0;
     playState.playing=true;
     document.getElementById('play-btn').innerHTML='&#9646;&#9646; Pause';
     playState.intervalId=setInterval(function(){
@@ -118,7 +140,8 @@ function startPlay(){
         var snap=computeStateAtMonth(playState.currentMonth);
         updateMapFromSnapshot(snap,true);updateCssPanel(snap);updateHeader(snap);
         document.getElementById('month-scrubber').value=playState.currentMonth;
-        if(playState.currentMonth>=12)stopPlay();
+        highlightActiveMarker(playState.currentMonth);
+        if(playState.currentMonth>=totalMonths)stopPlay();
     },1000);
 }
 
@@ -135,11 +158,13 @@ function scrubToMonth(M){
     var snap=computeStateAtMonth(M);
     updateMapFromSnapshot(snap,false);updateCssPanel(snap);updateHeader(snap);
     document.getElementById('month-scrubber').value=M;
+    highlightActiveMarker(M);
 }
 
 // --- Header & Labels ---
 function updateHeader(snap){
-    document.getElementById('sim-subtitle').textContent='Round '+appState.upcomingRound+' \u2022 '+snap.dateLabel;
+    // snap.dateLabel already includes round number + date (e.g. "Round 4 — March 31, 2030")
+    document.getElementById('sim-subtitle').textContent=snap.dateLabel;
     document.getElementById('month-label').textContent=snap.dateLabel;
 }
 
@@ -181,6 +206,41 @@ function initHideCompetitorsToggle(){
     var t=document.getElementById('hide-competitors-toggle');if(!t)return;
     var nt=t.cloneNode(true);t.parentNode.replaceChild(nt,t);
     nt.addEventListener('change',function(){scrubToMonth(playState.currentMonth);});
+}
+
+// --- Year Markers ---
+// These are clickable labels below the scrubber showing which round/year each section represents.
+
+function buildYearMarkers(totalMonths){
+    var container=document.getElementById('year-markers');
+    container.innerHTML='';
+    if(totalMonths<=0)return;
+    var numRounds=Math.ceil(totalMonths/12);
+    var baseYear=getBaseYear();
+
+    for(var i=0;i<numRounds;i++){
+        var round=appState.round+1+i;
+        if(round>8)break; // cap at Round 8
+        var year=baseYear+i;
+        var pct=(i*12/totalMonths)*100;
+        var marker=document.createElement('span');
+        marker.className='year-marker';
+        marker.style.left=pct+'%';
+        marker.textContent='R'+round;
+        marker.title=year.toString();
+        marker.setAttribute('data-month',i*12);
+        marker.addEventListener('click',function(){scrubToMonth(parseInt(this.getAttribute('data-month')));});
+        container.appendChild(marker);
+    }
+    highlightActiveMarker(0);
+}
+
+function highlightActiveMarker(M){
+    // Highlights the marker for the round currently containing the scrubber position.
+    var activeIdx=Math.floor(M/12);
+    document.querySelectorAll('.year-marker').forEach(function(m,idx){
+        m.classList.toggle('active',idx===activeIdx);
+    });
 }
 
 // --- Helper (used by simulation.js) ---

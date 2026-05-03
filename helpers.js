@@ -124,11 +124,13 @@ function dateToGlobalMonth(dateStr, parsedRound) {
 function globalMonthToInfo(globalMonth, parsedRound) {
     // Converts a global month number back to human-readable info.
     // Returns { round, year, monthIndex, monthName, fullMonthName, label }
+    // NOTE: Round is capped at 8 because Capsim simulations end at Round 8.
+    // Without this cap, the final month of a 6-year simulation would show "Round 9".
     var baseYear = getBaseYear();
     var yearOffset = Math.floor(globalMonth / 12);
     var monthInYear = globalMonth % 12;
     var calendarYear = baseYear + yearOffset;
-    var round = (parsedRound + 1) + yearOffset;
+    var round = Math.min(8, (parsedRound + 1) + yearOffset);
     var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var fullMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     var daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];

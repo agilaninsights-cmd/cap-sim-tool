@@ -73,7 +73,23 @@
 
         <section class="tab-panel" id="tab-simulator">
             <h2>Simulator</h2>
-            <p>Watch your products on the perceptual map as segments drift month by month.</p>
+            <p class="tab-description" id="sim-subtitle">Watch your products on the perceptual map as segments drift month by month.</p>
+            <div id="simulator-empty" class="empty-state">Parse a Courier in the Setup tab first.</div>
+            <div id="simulator-content" class="hidden">
+                <div class="map-container">
+                    <svg id="perceptual-map" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
+                <div class="map-legend">
+                    <span class="legend-item"><span class="legend-dot legend-andrews"></span> Andrews</span>
+                    <span class="legend-item"><span class="legend-dot legend-competitor"></span> Competitors</span>
+                    <span class="legend-item"><span class="legend-marker">&#9650;</span> Ideal spot</span>
+                    <label class="legend-item legend-toggle">
+                        <input type="checkbox" id="hide-competitors-toggle">
+                        <span>Hide competitors</span>
+                    </label>
+                </div>
+                <p class="time-placeholder">Time controls coming in next layer.</p>
+            </div>
         </section>
 
         <section class="tab-panel" id="tab-insights">
@@ -86,6 +102,7 @@
     <script src="parser.js"></script>
     <script src="products.js"></script>
     <script src="competitors.js"></script>
+    <script src="simulator.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

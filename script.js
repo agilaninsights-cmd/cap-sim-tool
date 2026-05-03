@@ -70,6 +70,7 @@ var appState = {
             displaySuccessSummary(summaryDiv, warnings);
             renderProductsTab();
             renderCompetitorsTab();
+            renderSimulatorTab();
             // Verification log
             console.log('Parse complete. Total products:', appState.products.length);
             var companyCounts = {};

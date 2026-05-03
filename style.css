@@ -575,6 +575,102 @@ body {
     font-size: 0.8rem;
 }
 
+/* --- Perceptual Map --- */
+.map-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 1rem;
+}
+
+.map-container svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: #fafafa;
+}
+
+.map-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-andrews {
+    background: #2563eb;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px #2563eb;
+}
+
+.legend-competitor {
+    background: #9ca3af;
+}
+
+.legend-marker {
+    color: #111827;
+    font-size: 0.7rem;
+}
+
+.time-placeholder {
+    text-align: center;
+    font-style: italic;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
+/* Legend toggle */
+.legend-toggle {
+    margin-left: 0.5rem;
+    cursor: pointer;
+}
+
+.legend-toggle input[type="checkbox"] {
+    width: 0.85rem;
+    height: 0.85rem;
+    margin: 0;
+}
+
+/* Ideal markers */
+.ideal-marker {
+    pointer-events: auto;
+}
+
+/* SVG product dots */
+.product-dot {
+    cursor: pointer;
+    transition: r 0.15s ease;
+}
+
+.product-dot:hover {
+    filter: brightness(1.1);
+}
+
+.andrews-dot:hover {
+    r: 10;
+}
+
+.competitor-dot:hover {
+    r: 7;
+}
+
 /* --- Responsive --- */
 @media (max-width: 600px) {
     .app-header {

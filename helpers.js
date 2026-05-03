@@ -92,6 +92,56 @@ function dateToMonth(dateStr, baseYear) {
     return null;
 }
 
+// --- Multi-Year Date Helpers ---
+// Used by simulation.js and products.js to handle the full multi-year timeline.
+
+function getYearFromDate(dateStr) {
+    // Extracts the 4-digit calendar year from either ISO "2029-06-15" or US "6/15/2029" format.
+    if (!dateStr) return null;
+    if (dateStr.indexOf('-') !== -1) return parseInt(dateStr.split('-')[0], 10);
+    var parts = dateStr.split('/');
+    if (parts.length >= 3) { var y = parseInt(parts[2], 10); return y < 100 ? y + 2000 : y; }
+    return null;
+}
+
+function dateToGlobalMonth(dateStr, parsedRound) {
+    // Converts a date string to a "global month" number.
+    // Global month 0 = January of the first simulated year (round parsedRound+1).
+    // E.g., if parsedRound=2, first year is 2029. "2029-06-15" -> globalMonth 6.
+    //        "2030-03-10" -> globalMonth 15 (month 3 of second year).
+    if (!dateStr) return null;
+    var baseYear = getBaseYear();
+    var year = getYearFromDate(dateStr);
+    if (!year) return null;
+    var monthInYear = null;
+    if (dateStr.indexOf('-') !== -1) { monthInYear = parseInt(dateStr.split('-')[1], 10); }
+    else { var parts = dateStr.split('/'); monthInYear = parseInt(parts[0], 10); }
+    if (!monthInYear) return null;
+    // Global month = (year - baseYear) * 12 + monthInYear
+    return (year - baseYear) * 12 + monthInYear;
+}
+
+function globalMonthToInfo(globalMonth, parsedRound) {
+    // Converts a global month number back to human-readable info.
+    // Returns { round, year, monthIndex, monthName, fullMonthName, label }
+    var baseYear = getBaseYear();
+    var yearOffset = Math.floor(globalMonth / 12);
+    var monthInYear = globalMonth % 12;
+    var calendarYear = baseYear + yearOffset;
+    var round = (parsedRound + 1) + yearOffset;
+    var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var fullMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return {
+        round: round,
+        year: calendarYear,
+        monthIndex: monthInYear,
+        monthName: monthNames[monthInYear],
+        fullMonthName: fullMonthNames[monthInYear],
+        label: 'Round ' + round + ' \u2014 ' + fullMonthNames[monthInYear] + ' ' + daysInMonth[monthInYear] + ', ' + calendarYear
+    };
+}
+
 // --- Summary Display ---
 
 function showSummary(el, type, message) {

@@ -1,6 +1,7 @@
 // ============================================
 // Capsim Strategist — Simulation Engine (Pure)
 // No DOM access. Pure state computation.
+// Now supports multi-year timeline (globalMonth 0 to (8-parsedRound)*12).
 // ============================================
 
 'use strict';
@@ -14,53 +15,27 @@ var DRIFT_RATES = {
     size:         { pfmn: 0.7, size: -1.0 }
 };
 
-// Month names for date labels
-var MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'];
-
 // ============================================
-// Main entry: computeStateAtMonth(M)
-// M: 0 = start of year (Jan 1), 12 = end of year (Dec 31)
+// Main entry: computeStateAtMonth(globalMonth)
+// globalMonth 0 = Jan of first simulated year
+// globalMonth can go up to (8 - parsedRound) * 12
 // ============================================
 
 function computeStateAtMonth(M) {
-    var baseYear = getBaseYear();
-    var dateLabel = getDateLabel(M, baseYear);
+    // Use globalMonthToInfo (from helpers.js) to get date label
+    var info = globalMonthToInfo(M, appState.round);
+    var dateLabel = info.label;
 
-    // Compute segment positions
     var segments = computeSegments(M);
-
-    // Compute product states
     var products = computeProducts(M, segments);
-
-    // Compute CSS and demand share
-    computeCssScores(products, segments);
+    computeCssScores(products, segments, M);
     computeDemandShares(products);
 
-    return {
-        month: M,
-        dateLabel: dateLabel,
-        segments: segments,
-        products: products
-    };
+    return { month: M, dateLabel: dateLabel, segments: segments, products: products };
 }
 
 // ============================================
-// Date helpers
-// (getBaseYear and dateToMonth are in helpers.js — loaded first)
-// ============================================
-
-function getDateLabel(M, baseYear) {
-    if (M <= 0) return 'January 1, ' + baseYear;
-    if (M >= 12) return 'December 31, ' + baseYear;
-    // End of month M (month M is 1-indexed here)
-    var monthIdx = Math.min(M, 12) - 1;
-    var daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    return MONTH_NAMES[monthIdx] + ' ' + daysInMonth[monthIdx] + ', ' + baseYear;
-}
-
-// ============================================
-// Segment drift
+// Segment drift (accumulates across years)
 // ============================================
 
 function computeSegments(M) {
@@ -75,54 +50,44 @@ function computeSegments(M) {
         if (!idealPos) return;
 
         var offset = SEGMENT_OFFSETS[key];
-        // Round-start centre = parsed ideal position - offset
+        // Round-start centre = parsed ideal position minus offset
         var startCentre = {
             pfmn: idealPos.pfmn - offset.pfmn,
             size: idealPos.size - offset.size
         };
 
-        // Monthly drift
+        // Monthly drift = annual drift / 12
+        // Accumulates linearly: at globalMonth M, total drift = M * monthly
         var drift = DRIFT_RATES[key];
-        var monthlyDriftPfmn = drift.pfmn / 12;
-        var monthlyDriftSize = drift.size / 12;
-
-        // Centre at month M
         var centre = {
-            pfmn: startCentre.pfmn + M * monthlyDriftPfmn,
-            size: startCentre.size + M * monthlyDriftSize
+            pfmn: startCentre.pfmn + M * (drift.pfmn / 12),
+            size: startCentre.size + M * (drift.size / 12)
         };
 
-        // Ideal spot at month M
         var ideal = {
             pfmn: centre.pfmn + offset.pfmn,
             size: centre.size + offset.size
         };
 
-        result[key] = {
-            centre: centre,
-            idealSpot: ideal,
-            buyingCriteria: seg.buyingCriteria
-        };
+        result[key] = { centre: centre, idealSpot: ideal, buyingCriteria: seg.buyingCriteria };
     });
 
     return result;
 }
 
 // ============================================
-// Product positions and ages
+// Product positions and ages (multi-revision)
 // ============================================
 
 function computeProducts(M, segments) {
     var results = [];
 
-    // Process all parsed products
     appState.products.forEach(function(p) {
         var isAndrews = (p.company === appState.myCompany);
         var prod = computeOneProduct(p, M, isAndrews);
         if (prod) results.push(prod);
     });
 
-    // Process new Andrews products
     appState.newProducts.forEach(function(np) {
         var prod = computeNewProduct(np, M);
         if (prod) results.push(prod);
@@ -137,41 +102,53 @@ function computeOneProduct(p, M, isAndrews) {
     var mtbf = p.mtbf;
     var price = p.price;
     var released = p.released;
-    var repositionMonth = null;
     var hasFutureRevision = false;
+    var repositionedThisMonth = false;
 
     if (isAndrews) {
-        var plan = appState.plannedChanges[p.name];
-        if (plan && plan.reposition && plan.revisionDate) {
-            repositionMonth = dateToMonth(plan.revisionDate, getBaseYear());
-            if (repositionMonth !== null && repositionMonth <= M) {
-                pfmn = plan.pfmn;
-                size = plan.size;
-                mtbf = plan.mtbf;
-                price = plan.price;
+        // Walk the plannedRevisions array — find the latest revision applied by month M
+        var revisions = appState.plannedRevisions[p.name] || [];
+        var appliedRevision = null;
+        revisions.forEach(function(rev) {
+            var gm = dateToGlobalMonth(rev.revisionDate, appState.round);
+            if (gm !== null && gm <= M) {
+                appliedRevision = rev;
             }
+            if (gm === M) repositionedThisMonth = true;
+        });
+        if (appliedRevision) {
+            pfmn = appliedRevision.pfmn;
+            size = appliedRevision.size;
+            mtbf = appliedRevision.mtbf;
+            price = appliedRevision.price;
+            released = true; // revision makes unreleased products appear
         }
     } else {
-        // Competitor: check if revision date is in simulation year
+        // Competitor: check if revision date is in the simulation window
         if (p.revisionDate) {
-            var compRevMonth = dateToMonth(p.revisionDate, getBaseYear());
-            if (compRevMonth !== null && compRevMonth >= 0 && compRevMonth <= 12) {
+            var compGm = dateToGlobalMonth(p.revisionDate, appState.round);
+            if (compGm !== null && compGm >= 0) {
                 hasFutureRevision = true;
-                // Don't change specs — we don't know target
             }
         }
     }
 
-    // Skip unreleased products (unless they become released during the year)
+    // Skip unreleased products that haven't been activated by a revision
     if (!released && !isAndrews) return null;
     if (!released && isAndrews) {
-        // Check if this was an existing unreleased product that gets repositioned
-        if (repositionMonth === null || repositionMonth > M) return null;
+        // Check if any revision has activated this product
+        var revs = appState.plannedRevisions[p.name] || [];
+        var activated = false;
+        revs.forEach(function(rev) {
+            var gm = dateToGlobalMonth(rev.revisionDate, appState.round);
+            if (gm !== null && gm <= M) activated = true;
+        });
+        if (!activated) return null;
         released = true;
     }
 
-    // Age calculation
-    var age = computeAge(p.ageDec31, M, repositionMonth);
+    // Age calculation: walks all applied revisions, halving at each
+    var age = computeAge(p.ageDec31, M, p.name);
 
     return {
         name: p.name,
@@ -184,7 +161,7 @@ function computeOneProduct(p, M, isAndrews) {
         price: price,
         age: age,
         released: released,
-        repositionedThisMonth: (repositionMonth === M),
+        repositionedThisMonth: repositionedThisMonth,
         hasFutureRevision: hasFutureRevision,
         css: null,
         demandShare: 0
@@ -192,10 +169,9 @@ function computeOneProduct(p, M, isAndrews) {
 }
 
 function computeNewProduct(np, M) {
-    var releaseMonth = dateToMonth(np.releaseDate, getBaseYear());
+    var releaseMonth = dateToGlobalMonth(np.releaseDate, appState.round);
     if (releaseMonth === null || releaseMonth > M) return null;
 
-    // Age starts at 0 on release, increments monthly
     var age = (M - releaseMonth) / 12;
 
     return {
@@ -216,22 +192,35 @@ function computeNewProduct(np, M) {
     };
 }
 
-function computeAge(ageDec31, M, repositionMonth) {
-    if (repositionMonth !== null && M >= repositionMonth) {
-        // Age at reposition moment
-        var ageAtRepos = ageDec31 + repositionMonth / 12;
-        var halvedAge = ageAtRepos / 2;
-        // Continue from halved age
-        return halvedAge + (M - repositionMonth) / 12;
-    }
-    return ageDec31 + M / 12;
+function computeAge(ageDec31, M, productName) {
+    // Walk ALL revisions applied up to month M.
+    // Each revision halves the age at the moment it applies.
+    var revisions = appState.plannedRevisions[productName] || [];
+    var age = ageDec31;
+    var lastMonth = 0;
+
+    revisions.forEach(function(rev) {
+        var gm = dateToGlobalMonth(rev.revisionDate, appState.round);
+        if (gm !== null && gm <= M) {
+            age = age + (gm - lastMonth) / 12;  // age up to this revision
+            age = age / 2;                        // halve on revision
+            lastMonth = gm;
+        }
+    });
+
+    // Age from last event to current month
+    age = age + (M - lastMonth) / 12;
+    return age;
 }
 
 // ============================================
-// CSS Scoring
+// CSS Scoring (with price range adjustment per year)
 // ============================================
 
-function computeCssScores(products, segments) {
+function computeCssScores(products, segments, M) {
+    // M is globalMonth — used to calculate how many years of price drop
+    var yearsElapsed = Math.floor(M / 12);
+
     products.forEach(function(p) {
         if (!p.released || !p.segmentKey) {
             p.css = { total: 0, position: 0, age: 0, price: 0, mtbf: 0, positionRaw: 0, ageRaw: 0, priceRaw: 0, mtbfRaw: 0 };
@@ -254,19 +243,16 @@ function computeCssScores(products, segments) {
         var priceRange = null, mtbfRange = null;
 
         criteria.forEach(function(c) {
-            if (c.criterion === 'Position') {
-                posWeight = c.importance;
-            } else if (c.criterion === 'Age') {
-                ageWeight = c.importance;
-                idealAge = c.idealAge !== undefined ? c.idealAge : 2.0;
-            } else if (c.criterion === 'Price') {
-                priceWeight = c.importance;
-                priceRange = c.priceRange;
-            } else if (c.criterion === 'Reliability') {
-                mtbfWeight = c.importance;
-                mtbfRange = c.mtbfRange;
-            }
+            if (c.criterion === 'Position') { posWeight = c.importance; }
+            else if (c.criterion === 'Age') { ageWeight = c.importance; idealAge = c.idealAge !== undefined ? c.idealAge : 2.0; }
+            else if (c.criterion === 'Price') { priceWeight = c.importance; priceRange = c.priceRange; }
+            else if (c.criterion === 'Reliability') { mtbfWeight = c.importance; mtbfRange = c.mtbfRange; }
         });
+
+        // PRD 10.4: price ranges drop $0.50 per year
+        if (priceRange) {
+            priceRange = [priceRange[0] - 0.5 * yearsElapsed, priceRange[1] - 0.5 * yearsElapsed];
+        }
 
         ageRaw = scoreAge(p.age, idealAge);
         priceRaw = priceRange ? scorePrice(p.price, priceRange[0], priceRange[1]) : 0;
@@ -294,47 +280,29 @@ function scorePosition(pfmn, size, idealPfmn, idealSize) {
     var dx = pfmn - idealPfmn;
     var dy = size - idealSize;
     var dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist <= 2.5) {
-        // Inside fine cut: near-perfect
-        return 1.0 - (dist / 2.5) * 0.01;
-    } else if (dist <= 4.0) {
-        // Rough cut band: quadratic drop
-        var t = (dist - 2.5) / 1.5;
-        return 0.99 * Math.pow(1 - t, 2);
-    }
+    if (dist <= 2.5) return 1.0 - (dist / 2.5) * 0.01;
+    else if (dist <= 4.0) { var t = (dist - 2.5) / 1.5; return 0.99 * Math.pow(1 - t, 2); }
     return 0;
 }
 
 // --- Age Score ---
 function scoreAge(age, idealAge) {
     var diff = Math.abs(age - idealAge);
-    var sigma = 2.0;
-    return Math.exp(-(diff * diff) / (2 * sigma * sigma));
+    return Math.exp(-(diff * diff) / (2 * 2.0 * 2.0));
 }
 
 // --- Price Score ---
 function scorePrice(price, low, high) {
-    if (price >= low && price <= high) {
-        return 1.0 - (price - low) / (high - low);
-    } else if (price < low) {
-        return Math.min(1.0, 1.0 + (low - price) * 0.01);
-    } else {
-        var gap = price - high;
-        return Math.max(0, 1.0 - gap * 0.20);
-    }
+    if (price >= low && price <= high) return 1.0 - (price - low) / (high - low);
+    else if (price < low) return Math.min(1.0, 1.0 + (low - price) * 0.01);
+    else return Math.max(0, 1.0 - (price - high) * 0.20);
 }
 
 // --- MTBF Score ---
 function scoreMtbf(mtbf, low, high) {
-    if (mtbf >= low && mtbf <= high) {
-        return (mtbf - low) / (high - low);
-    } else if (mtbf > high) {
-        return 1.0;
-    } else {
-        var gap = low - mtbf;
-        return Math.max(0, 1.0 - (gap / 1000) * 0.20);
-    }
+    if (mtbf >= low && mtbf <= high) return (mtbf - low) / (high - low);
+    else if (mtbf > high) return 1.0;
+    else return Math.max(0, 1.0 - ((low - mtbf) / 1000) * 0.20);
 }
 
 // ============================================
@@ -342,22 +310,16 @@ function scoreMtbf(mtbf, low, high) {
 // ============================================
 
 function computeDemandShares(products) {
-    // Group by segment
     var segGroups = {};
     products.forEach(function(p) {
         if (!p.released || !p.segmentKey || !p.css) return;
         if (!segGroups[p.segmentKey]) segGroups[p.segmentKey] = [];
         segGroups[p.segmentKey].push(p);
     });
-
-    // Compute shares
     Object.keys(segGroups).forEach(function(key) {
         var group = segGroups[key];
         var totalCss = 0;
         group.forEach(function(p) { totalCss += p.css.total; });
-
-        group.forEach(function(p) {
-            p.demandShare = totalCss > 0 ? p.css.total / totalCss : 0;
-        });
+        group.forEach(function(p) { p.demandShare = totalCss > 0 ? p.css.total / totalCss : 0; });
     });
 }

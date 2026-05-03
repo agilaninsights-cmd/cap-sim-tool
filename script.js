@@ -12,7 +12,7 @@ var appState = {
     myCompany: 'Andrews',
     segments: {},
     products: [],
-    plannedChanges: {},
+    plannedRevisions: {},  // { "Able": [{pfmn, size, mtbf, price, revisionDate}, ...], ... }
     newProducts: [],
     geminiKey: '',
     lastAiResponse: ''
@@ -59,7 +59,7 @@ var appState = {
         }
 
         // Confirm if planned changes exist
-        var hasPlannedData = Object.keys(appState.plannedChanges).length > 0 || appState.newProducts.length > 0;
+        var hasPlannedData = Object.keys(appState.plannedRevisions).some(function(k) { return appState.plannedRevisions[k].length > 0; }) || appState.newProducts.length > 0;
         if (hasPlannedData) {
             if (!confirm('Re-parsing will reset your planned changes. Continue?')) return;
         }
@@ -75,7 +75,7 @@ var appState = {
 
         var warnings = [];
         try {
-            appState.plannedChanges = {};
+            appState.plannedRevisions = {};
             appState.newProducts = [];
             appState.lastAiResponse = '';  // clear stale AI analysis from previous Courier
             parseCourier(text, warnings);

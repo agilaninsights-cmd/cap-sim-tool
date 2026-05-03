@@ -45,16 +45,17 @@ function renderHealthCards(snap0, snap12) {
         // Find biggest drag
         var recommendation = getRecommendation(p12);
 
-        // Check if planned revision helps
+        // Check if any planned revision within the first year helps
         var revisionNote = '';
-        var plan = appState.plannedChanges[p0.name];
-        if (plan && plan.reposition && plan.revisionDate) {
-            var revMonth = dateToMonth(plan.revisionDate, getBaseYear());
-            if (revMonth !== null && revMonth >= 1 && revMonth <= 12) {
-                var snapRev = computeStateAtMonth(revMonth);
+        var revs = appState.plannedRevisions[p0.name] || [];
+        if (revs.length > 0) {
+            var firstRev = revs[0];
+            var revGm = dateToGlobalMonth(firstRev.revisionDate, appState.round);
+            if (revGm !== null && revGm >= 1 && revGm <= 12) {
+                var snapRev = computeStateAtMonth(revGm);
                 var pRev = snapRev.products.find(function(x) { return x.name === p0.name; });
                 if (pRev && pRev.css) {
-                    revisionNote = 'After planned reposition on ' + plan.revisionDate + ', CSS recovers to ' + pRev.css.total.toFixed(1) + '.';
+                    revisionNote = 'After planned reposition on ' + firstRev.revisionDate + ', CSS recovers to ' + pRev.css.total.toFixed(1) + '.';
                 }
             }
         }
@@ -200,11 +201,15 @@ function buildGeminiPrompt() {
         p += '- ' + pr.name + ' (' + (pr.segment || '?') + '): Pfmn ' + pr.pfmn.toFixed(1) + ', Size ' + pr.size.toFixed(1) + ', MTBF ' + pr.mtbf + ', Price $' + pr.price.toFixed(2) + ', Age ' + pr.age.toFixed(1) + ', CSS Jan:' + (pr.css ? pr.css.total.toFixed(0) : '?') + ' Dec:' + (pr12 && pr12.css ? pr12.css.total.toFixed(0) : '?') + '\n';
     });
 
-    // Planned changes
-    var plans = Object.keys(appState.plannedChanges).filter(function(n) { return appState.plannedChanges[n].reposition; });
-    if (plans.length > 0) {
-        p += '\nPLANNED CHANGES:\n';
-        plans.forEach(function(n) { var pl = appState.plannedChanges[n]; p += '- ' + n + ': reposition to Pfmn ' + pl.pfmn + ', Size ' + pl.size + ', MTBF ' + pl.mtbf + ', Price $' + pl.price + ', Rev Date ' + pl.revisionDate + '\n'; });
+    // Planned revisions (multi-year)
+    var revKeys = Object.keys(appState.plannedRevisions).filter(function(n) { return appState.plannedRevisions[n].length > 0; });
+    if (revKeys.length > 0) {
+        p += '\nPLANNED REVISIONS:\n';
+        revKeys.forEach(function(n) {
+            appState.plannedRevisions[n].forEach(function(rev) {
+                p += '- ' + n + ': reposition to Pfmn ' + rev.pfmn + ', Size ' + rev.size + ', MTBF ' + rev.mtbf + ', Price $' + rev.price + ', Rev Date ' + rev.revisionDate + '\n';
+            });
+        });
     }
 
     if (appState.newProducts.length > 0) {

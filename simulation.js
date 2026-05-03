@@ -47,15 +47,8 @@ function computeStateAtMonth(M) {
 
 // ============================================
 // Date helpers
+// (getBaseYear and dateToMonth are in helpers.js — loaded first)
 // ============================================
-
-function getBaseYear() {
-    // If round 2 ended Dec 31, 2028 -> upcoming round 3 covers 2029
-    if (!appState.endDate) return 2027 + (appState.upcomingRound || 1);
-    var yearMatch = appState.endDate.match(/(\d{4})/);
-    if (yearMatch) return parseInt(yearMatch[1], 10) + 1;
-    return 2029;
-}
 
 function getDateLabel(M, baseYear) {
     if (M <= 0) return 'January 1, ' + baseYear;
@@ -232,28 +225,6 @@ function computeAge(ageDec31, M, repositionMonth) {
         return halvedAge + (M - repositionMonth) / 12;
     }
     return ageDec31 + M / 12;
-}
-
-function dateToMonth(dateStr, baseYear) {
-    if (!dateStr) return null;
-    // Handle ISO format (2029-06-15) or M/D/YYYY format
-    var parts;
-    if (dateStr.indexOf('-') !== -1) {
-        parts = dateStr.split('-');
-        var year = parseInt(parts[0], 10);
-        var month = parseInt(parts[1], 10);
-        if (year !== baseYear) return null;
-        return month; // 1-12
-    }
-    // M/D/YYYY format
-    parts = dateStr.split('/');
-    if (parts.length >= 3) {
-        var yr = parseInt(parts[2], 10);
-        if (yr < 100) yr += 2000;
-        if (yr !== baseYear) return null;
-        return parseInt(parts[0], 10); // month 1-12
-    }
-    return null;
 }
 
 // ============================================

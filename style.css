@@ -918,16 +918,18 @@ body {
     }
 
     .tab-bar {
-        padding: 0 1rem;
+        padding: 0 0.5rem;
     }
 
     .tab-btn {
-        padding: 0.75rem 1rem;
-        font-size: 0.8rem;
+        padding: 0.75rem 0.7rem;
+        font-size: 0.75rem;
+        /* min-height ensures 44px touch target */
+        min-height: 44px;
     }
 
     .tab-content {
-        padding: 2rem 1rem;
+        padding: 1.5rem 0.75rem;
     }
 
     .tab-panel h2 {
@@ -948,5 +950,40 @@ body {
 
     .planned-fields {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Ensure all small buttons meet 44px touch target */
+    .btn-reset,
+    .btn-danger,
+    .btn-secondary,
+    .btn-play {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Larger toggle checkbox for touch */
+    .toggle-row input[type="checkbox"],
+    .legend-toggle input[type="checkbox"] {
+        width: 1.375rem;
+        height: 1.375rem;
+    }
+
+    /* Legend wraps on narrow screens */
+    .map-legend {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    /* AI key row stacks vertically on mobile */
+    .ai-key-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ai-key-input {
+        max-width: 100%;
     }
 }

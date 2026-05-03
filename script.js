@@ -64,10 +64,20 @@ var appState = {
             if (!confirm('Re-parsing will reset your planned changes. Continue?')) return;
         }
 
+        // Pre-check: does this look like a Capsim Courier?
+        // We look for two markers that appear in every real Courier.
+        if (text.indexOf('CAPSTONE') === -1 || text.indexOf('Round:') === -1) {
+            showSummary(summaryDiv, 'error',
+                'This doesn\u2019t look like a Capsim Courier. Please paste the full text from your Courier page.<br><br>' +
+                '<em>Tip: open the HTML Courier in your Capsim browser tab, press Ctrl+A then Ctrl+C, then paste here.</em>');
+            return;
+        }
+
         var warnings = [];
         try {
             appState.plannedChanges = {};
             appState.newProducts = [];
+            appState.lastAiResponse = '';  // clear stale AI analysis from previous Courier
             parseCourier(text, warnings);
             displaySuccessSummary(summaryDiv, warnings);
             renderProductsTab();

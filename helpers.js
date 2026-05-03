@@ -54,6 +54,44 @@ function getSegmentDisplayName(key) {
     return names[key] || key;
 }
 
+// --- Date/Year Helpers ---
+// These are used by products.js, simulation.js, and insights.js,
+// so they live here (loaded first) to avoid load-order issues.
+
+function getBaseYear() {
+    // Determines the calendar year for the upcoming round.
+    // If Round 2 ended Dec 31, 2028 → upcoming Round 3 covers 2029.
+    if (!appState.endDate) return 2027 + (appState.upcomingRound || 1);
+    var yearMatch = appState.endDate.match(/(\d{4})/);
+    if (yearMatch) return parseInt(yearMatch[1], 10) + 1;
+    return 2029;
+}
+
+function dateToMonth(dateStr, baseYear) {
+    // Converts a date string to a month number (1-12) within baseYear.
+    // Returns null if the date is not in baseYear.
+    // Handles two formats:
+    //   ISO: "2029-06-15" → month 6
+    //   US:  "6/15/2029" or "6/15/29" → month 6
+    if (!dateStr) return null;
+    var parts;
+    if (dateStr.indexOf('-') !== -1) {
+        parts = dateStr.split('-');
+        var year = parseInt(parts[0], 10);
+        var month = parseInt(parts[1], 10);
+        if (year !== baseYear) return null;
+        return month;
+    }
+    parts = dateStr.split('/');
+    if (parts.length >= 3) {
+        var yr = parseInt(parts[2], 10);
+        if (yr < 100) yr += 2000; // handle 2-digit years like "29" → 2029
+        if (yr !== baseYear) return null;
+        return parseInt(parts[0], 10);
+    }
+    return null;
+}
+
 // --- Summary Display ---
 
 function showSummary(el, type, message) {

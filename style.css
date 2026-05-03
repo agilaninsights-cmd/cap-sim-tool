@@ -100,7 +100,7 @@ body {
 /* --- Tab Content --- */
 .tab-content {
     padding: 3rem 1.5rem;
-    max-width: 720px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
@@ -264,6 +264,318 @@ body {
 }
 
 /* --- Responsive --- */
+/* --- Empty State --- */
+.empty-state {
+    color: var(--color-text-muted);
+    font-style: italic;
+    padding: 2rem 0;
+}
+
+/* --- Hidden utility --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- Section Headings --- */
+.section-heading {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 1.5rem 0 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.4rem;
+}
+
+/* --- Product Counter --- */
+.product-counter {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-accent-light);
+    border-radius: 4px;
+}
+
+/* --- Product Cards --- */
+.product-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.product-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.product-card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.product-card-segment {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.current-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.spec-item {
+    font-size: 0.8rem;
+}
+
+.spec-label {
+    color: var(--color-text-muted);
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.spec-value {
+    font-weight: 600;
+}
+
+/* --- Toggle Row --- */
+.toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.toggle-row input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+}
+
+.toggle-row label {
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+}
+
+/* --- Planned Fields --- */
+.planned-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.planned-fields.disabled input {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+.planned-fields label {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.planned-fields input {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.planned-fields input:focus {
+    border-color: var(--color-accent);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+/* --- Buttons --- */
+.btn-secondary {
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-secondary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.btn-reset {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.btn-reset:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+}
+
+.btn-danger {
+    font-size: 0.75rem;
+    color: var(--color-error);
+    background: none;
+    border: 1px solid var(--color-error);
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: var(--color-error-bg);
+}
+
+/* --- New Product Form --- */
+.new-product-form {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-top: 1rem;
+}
+
+.new-product-form .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.new-product-form label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.new-product-form input,
+.new-product-form select {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.new-product-form input:focus,
+.new-product-form select:focus {
+    border-color: var(--color-accent);
+    outline: none;
+}
+
+.new-product-form .form-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* --- New Product Cards --- */
+.new-product-card {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.new-product-card .npc-info {
+    font-size: 0.85rem;
+}
+
+.new-product-card .npc-name {
+    font-weight: 600;
+}
+
+/* --- Competitors Table --- */
+.filter-bar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.filter-bar select {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    background: var(--color-bg);
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 2px solid var(--color-border);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.data-table tr:hover {
+    background: var(--color-accent-light);
+}
+
+.data-table tr.modified {
+    border-left: 3px solid var(--color-accent);
+}
+
+.data-table td.editable {
+    cursor: pointer;
+}
+
+.data-table td.editable:hover {
+    background: #f0f4ff;
+}
+
+.data-table td.editing input {
+    width: 100%;
+    padding: 0.2rem 0.3rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 3px;
+    font-size: 0.8rem;
+}
+
+/* --- Responsive --- */
 @media (max-width: 600px) {
     .app-header {
         padding: 1.5rem 1rem 1rem;
@@ -292,5 +604,17 @@ body {
 
     .courier-textarea {
         min-height: 150px;
+    }
+
+    .product-card {
+        padding: 1rem;
+    }
+
+    .current-specs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .planned-fields {
+        grid-template-columns: repeat(2, 1fr);
     }
 }

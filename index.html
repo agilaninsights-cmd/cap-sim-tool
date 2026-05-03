@@ -40,12 +40,35 @@
 
         <section class="tab-panel" id="tab-products">
             <h2>Your Products</h2>
-            <p>Plan your R&D specs, prices, and revision dates for each of your products.</p>
+            <p class="tab-description">Plan R&D decisions for the upcoming round.</p>
+            <div id="products-empty" class="empty-state">Parse a Courier in the Setup tab first.</div>
+            <div id="products-content" class="hidden">
+                <div id="product-counter" class="product-counter"></div>
+                <h3 class="section-heading">Existing Products</h3>
+                <div id="products-list"></div>
+                <h3 class="section-heading">New Products to Launch</h3>
+                <div id="new-products-list"></div>
+                <button id="add-product-btn" class="btn-secondary">+ Add New Product</button>
+                <div id="new-product-form" class="new-product-form hidden"></div>
+            </div>
         </section>
 
         <section class="tab-panel" id="tab-competitors">
             <h2>Competitors</h2>
-            <p>View and edit competitor product data extracted from the Courier.</p>
+            <p class="tab-description">View and edit competitor product data.</p>
+            <div id="competitors-empty" class="empty-state">Parse a Courier in the Setup tab first.</div>
+            <div id="competitors-content" class="hidden">
+                <div class="filter-bar">
+                    <select id="filter-company"><option value="all">All Companies</option></select>
+                    <select id="filter-segment"><option value="all">All Segments</option></select>
+                </div>
+                <div class="table-wrap">
+                    <table id="competitors-table" class="data-table">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <section class="tab-panel" id="tab-simulator">
@@ -61,6 +84,8 @@
 
     <script src="helpers.js"></script>
     <script src="parser.js"></script>
+    <script src="products.js"></script>
+    <script src="competitors.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

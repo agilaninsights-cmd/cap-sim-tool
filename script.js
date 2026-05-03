@@ -11,7 +11,9 @@ var appState = {
     endDate: null,
     myCompany: 'Andrews',
     segments: {},
-    products: []
+    products: [],
+    plannedChanges: {},
+    newProducts: []
 };
 
 // ============================================
@@ -54,10 +56,20 @@ var appState = {
             return;
         }
 
+        // Confirm if planned changes exist
+        var hasPlannedData = Object.keys(appState.plannedChanges).length > 0 || appState.newProducts.length > 0;
+        if (hasPlannedData) {
+            if (!confirm('Re-parsing will reset your planned changes. Continue?')) return;
+        }
+
         var warnings = [];
         try {
+            appState.plannedChanges = {};
+            appState.newProducts = [];
             parseCourier(text, warnings);
             displaySuccessSummary(summaryDiv, warnings);
+            renderProductsTab();
+            renderCompetitorsTab();
             // Verification log
             console.log('Parse complete. Total products:', appState.products.length);
             var companyCounts = {};

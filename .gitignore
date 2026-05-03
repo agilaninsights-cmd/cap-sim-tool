@@ -1,0 +1,22 @@
+# OS junk files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VS Code settings (personal preferences)
+.vscode/
+
+# Node dependencies (we'll create this folder later)
+node_modules/
+
+# Build output / temp folders
+dist/
+build/
+.cache/
+
+# Logs
+*.log
+
+# Environment files (anything secret)
+.env
+.env.local

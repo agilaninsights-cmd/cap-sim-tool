@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capsim Strategist</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="app-header">
+        <h1>Capsim Strategist</h1>
+    </header>
+
+    <nav class="tab-bar">
+        <button class="tab-btn active" data-tab="setup">Setup</button>
+        <button class="tab-btn" data-tab="products">Your Products</button>
+        <button class="tab-btn" data-tab="competitors">Competitors</button>
+        <button class="tab-btn" data-tab="simulator">Simulator</button>
+        <button class="tab-btn" data-tab="insights">Insights</button>
+    </nav>
+
+    <main class="tab-content">
+        <section class="tab-panel active" id="tab-setup">
+            <h2>Setup</h2>
+            <p>Paste your Capsim Courier HTML here to extract round data and populate the tool.</p>
+        </section>
+
+        <section class="tab-panel" id="tab-products">
+            <h2>Your Products</h2>
+            <p>Plan your R&D specs, prices, and revision dates for each of your products.</p>
+        </section>
+
+        <section class="tab-panel" id="tab-competitors">
+            <h2>Competitors</h2>
+            <p>View and edit competitor product data extracted from the Courier.</p>
+        </section>
+
+        <section class="tab-panel" id="tab-simulator">
+            <h2>Simulator</h2>
+            <p>Watch your products on the perceptual map as segments drift month by month.</p>
+        </section>
+
+        <section class="tab-panel" id="tab-insights">
+            <h2>Insights</h2>
+            <p>Get ideal positioning recommendations and see how your CSS evolves over time.</p>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

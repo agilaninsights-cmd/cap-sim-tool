@@ -75,9 +75,13 @@ function buildProductCard(p, plan, disabledClass, checkedAttr) {
     h += '<div class="spec-item"><span class="spec-label">Age</span><span class="spec-value">' + p.ageDec31 + '</span></div>';
     h += '<div class="spec-item"><span class="spec-label">Rev Date</span><span class="spec-value">' + (p.revisionDate || '\u2014') + '</span></div>';
     h += '</div>';
+    var inFlightDate = getInFlightRevisionDate(p);
+    var toggleDisabled = inFlightDate ? ' disabled' : '';
+    var toggleTitle = inFlightDate ? ' title="R&D project already in progress (completes ' + inFlightDate + '). A product can only have one revision running at a time."' : '';
     h += '<div class="toggle-row">';
-    h += '<input type="checkbox" id="toggle-' + p.name + '" class="reposition-toggle"' + checkedAttr + '>';
+    h += '<input type="checkbox" id="toggle-' + p.name + '" class="reposition-toggle"' + checkedAttr + toggleDisabled + toggleTitle + '>';
     h += '<label for="toggle-' + p.name + '">Reposition this product this round</label>';
+    if (inFlightDate) h += '<span class="revision-note">R&D in progress \u2014 completes ' + inFlightDate + '</span>';
     h += '</div>';
     h += '<div class="planned-fields' + disabledClass + '" data-product="' + p.name + '">';
     h += '<div><label>Pfmn</label><input type="number" step="0.1" class="plan-pfmn" value="' + plan.pfmn + '"></div>';
@@ -87,8 +91,37 @@ function buildProductCard(p, plan, disabledClass, checkedAttr) {
     h += '<div><label>Rev Date</label><input type="date" class="plan-revdate" value="' + plan.revisionDate + '"></div>';
     h += '</div>';
     h += '<button class="btn-reset" data-product="' + p.name + '">Reset to current</button>';
+    if (plan.reposition && plan.revisionDate) {
+        var baseYr = getBaseYear();
+        var revM = dateToMonth(plan.revisionDate, baseYr);
+        if (revM === null || revM > 12) {
+            h += '<p class="revision-note">This revision completes ' + plan.revisionDate + ' \u2014 outside this year\u2019s simulation.</p>';
+        }
+    }
     h += '</div>';
     return h;
+}
+
+function getInFlightRevisionDate(p) {
+    if (!p.revisionDate) return null;
+    var baseYear = getBaseYear();
+    // Check if revision date is in the simulation year (upcoming round)
+    var revMonth = dateToMonth(p.revisionDate, baseYear);
+    if (revMonth !== null && revMonth >= 1) return p.revisionDate;
+    // Check if date is in a future year beyond the simulation
+    var parts = p.revisionDate.split('/');
+    if (parts.length >= 3) {
+        var yr = parseInt(parts[2], 10);
+        if (yr < 100) yr += 2000;
+        if (yr >= baseYear) return p.revisionDate;
+    }
+    // ISO format check
+    if (p.revisionDate.indexOf('-') !== -1) {
+        var iParts = p.revisionDate.split('-');
+        var iYr = parseInt(iParts[0], 10);
+        if (iYr >= baseYear) return p.revisionDate;
+    }
+    return null;
 }
 
 function attachProductCardListeners() {

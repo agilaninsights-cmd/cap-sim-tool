@@ -88,7 +88,34 @@
                         <span>Hide competitors</span>
                     </label>
                 </div>
-                <p class="time-placeholder">Time controls coming in next layer.</p>
+                <div class="time-controls">
+                    <div class="time-controls-row">
+                        <button id="play-btn" class="btn-play">&#9654; Play</button>
+                        <span id="month-label" class="month-label">January, Round 3</span>
+                    </div>
+                    <div class="scrubber-wrap">
+                        <span class="scrub-label">Jan</span>
+                        <input type="range" id="month-scrubber" min="0" max="12" value="0" step="1" class="scrubber">
+                        <span class="scrub-label">Dec</span>
+                    </div>
+                </div>
+                <div class="css-panel" id="css-panel">
+                    <div class="css-panel-header">
+                        <label for="focus-product">Product Focus</label>
+                        <select id="focus-product"></select>
+                    </div>
+                    <div class="css-panel-body" id="css-panel-body">
+                        <div class="css-score-row">
+                            <span class="css-total-label">CSS Score:</span>
+                            <span id="css-total" class="css-total-value">0 / 100</span>
+                        </div>
+                        <div class="css-score-row">
+                            <span class="css-total-label">Demand Share:</span>
+                            <span id="css-demand" class="css-total-value">0%</span>
+                        </div>
+                        <div class="css-breakdown" id="css-breakdown"></div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -102,6 +129,7 @@
     <script src="parser.js"></script>
     <script src="products.js"></script>
     <script src="competitors.js"></script>
+    <script src="simulation.js"></script>
     <script src="simulator.js"></script>
     <script src="script.js"></script>
 </body>

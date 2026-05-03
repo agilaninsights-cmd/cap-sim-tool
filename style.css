@@ -578,8 +578,14 @@ body {
 /* --- Perceptual Map --- */
 .map-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 80vw;
     margin: 0 auto 1rem;
+}
+
+@media (min-width: 900px) {
+    .map-container {
+        max-width: 720px;
+    }
 }
 
 .map-container svg {
@@ -669,6 +675,174 @@ body {
 
 .competitor-dot:hover {
     r: 7;
+}
+
+/* --- Time Controls --- */
+.time-controls {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.time-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.btn-play {
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius);
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-play:hover {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+
+.month-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+.scrubber-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.scrub-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.scrubber {
+    flex: 1;
+    height: 6px;
+    cursor: pointer;
+}
+
+/* --- CSS Panel --- */
+.css-panel {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.css-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.css-panel-header label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.css-panel-header select {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.css-score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.css-total-label {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.css-total-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.css-breakdown {
+    margin-top: 0.75rem;
+}
+
+.css-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.css-bar-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    min-width: 100px;
+}
+
+.css-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.css-bar-fill {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.css-bar-score {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    min-width: 50px;
+    text-align: right;
+}
+
+/* --- SVG Animation Transitions --- */
+#perceptual-map.animating .segment-group,
+#perceptual-map.animating .ideal-group {
+    transition: transform 800ms ease;
+}
+
+#perceptual-map.animating .just-repositioned {
+    transition: transform 1500ms ease;
+}
+
+/* Reposition pulse animation */
+.just-repositioned circle:first-child {
+    animation: reposPulse 1.5s ease;
+}
+
+@keyframes reposPulse {
+    0% { r: 8; }
+    30% { r: 12; fill: #60a5fa; }
+    100% { r: 8; fill: #2563eb; }
+}
+
+/* Revision note */
+.revision-note {
+    font-size: 0.75rem;
+    color: var(--color-warning);
+    font-style: italic;
+    margin-top: 0.4rem;
 }
 
 /* --- Responsive --- */

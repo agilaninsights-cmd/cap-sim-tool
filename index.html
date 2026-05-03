@@ -22,7 +22,20 @@
     <main class="tab-content">
         <section class="tab-panel active" id="tab-setup">
             <h2>Setup</h2>
-            <p>Paste your Capsim Courier HTML here to extract round data and populate the tool.</p>
+            <p class="tab-description">Paste your Capsim Courier text to extract round data and populate the tool.</p>
+
+            <div class="setup-form">
+                <label for="courier-input" class="input-label">Paste your Capsim Courier here</label>
+                <textarea
+                    id="courier-input"
+                    class="courier-textarea"
+                    placeholder="Open your Capsim Courier in the browser, press Ctrl+A to select all, then Ctrl+C to copy. Come back here and Ctrl+V to paste."
+                    spellcheck="false"
+                ></textarea>
+                <button id="parse-btn" class="btn-primary">Parse</button>
+            </div>
+
+            <div id="parse-summary" class="parse-summary hidden"></div>
         </section>
 
         <section class="tab-panel" id="tab-products">
@@ -46,6 +59,8 @@
         </section>
     </main>
 
+    <script src="helpers.js"></script>
+    <script src="parser.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

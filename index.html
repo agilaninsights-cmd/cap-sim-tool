@@ -121,7 +121,22 @@
 
         <section class="tab-panel" id="tab-insights">
             <h2>Insights</h2>
-            <p>Get ideal positioning recommendations and see how your CSS evolves over time.</p>
+            <p class="tab-description">Strategic analysis and positioning recommendations.</p>
+            <div id="insights-empty" class="empty-state">Parse a Courier in the Setup tab first.</div>
+            <div id="insights-content" class="hidden">
+                <h3 class="section-heading">Product Health Cards</h3>
+                <div id="insights-cards"></div>
+                <h3 class="section-heading">Ideal Position Analysis</h3>
+                <div id="insights-ideal-table"></div>
+                <h3 class="section-heading">AI Strategy Coach (powered by Gemini)</h3>
+                <p class="ai-description">Optional — provide your own free Gemini API key for AI-powered strategy analysis. Your key is stored only in this browser session and never sent anywhere except Google's Gemini API.</p>
+                <div class="ai-key-row">
+                    <input type="password" id="gemini-key" placeholder="Paste Gemini API key" class="ai-key-input">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="ai-key-link">Get a free key &rarr;</a>
+                </div>
+                <button id="ai-generate-btn" class="btn-primary">Generate AI Strategy Analysis</button>
+                <div id="ai-response" class="ai-response hidden"></div>
+            </div>
         </section>
     </main>
 
@@ -131,6 +146,7 @@
     <script src="competitors.js"></script>
     <script src="simulation.js"></script>
     <script src="simulator.js"></script>
+    <script src="insights.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -845,6 +845,68 @@ body {
     margin-top: 0.4rem;
 }
 
+/* --- Insights Tab --- */
+.insight-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid var(--color-border);
+}
+
+.insight-card.status-healthy { border-left-color: var(--color-success); }
+.insight-card.status-watch { border-left-color: var(--color-warning); }
+.insight-card.status-critical { border-left-color: var(--color-error); }
+
+.insight-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.insight-card-title { font-weight: 600; font-size: 0.9rem; }
+.insight-status { font-size: 0.8rem; font-weight: 600; }
+.insight-css-row { font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 0.4rem; }
+.insight-drop { color: var(--color-error); font-weight: 600; }
+.insight-recommendation { font-size: 0.85rem; color: var(--color-text); margin-bottom: 0.3rem; }
+.insight-revision-note { font-size: 0.8rem; color: var(--color-success); font-style: italic; }
+
+/* AI Coach */
+.ai-description { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+
+.ai-key-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.ai-key-input {
+    flex: 1;
+    max-width: 320px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.ai-key-link { font-size: 0.8rem; color: var(--color-accent); }
+
+.ai-response {
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: #f9fafb;
+    max-height: 500px;    /* prevents long AI responses from hijacking page layout */
+    overflow-y: auto;     /* shows scrollbar only when content exceeds max-height */
+}
+
+.ai-response-text { font-size: 0.9rem; line-height: 1.7; color: var(--color-text); }
+.ai-loading { font-style: italic; color: var(--color-text-muted); }
+.ai-error { color: var(--color-error); font-size: 0.85rem; }
+
 /* --- Responsive --- */
 @media (max-width: 600px) {
     .app-header {

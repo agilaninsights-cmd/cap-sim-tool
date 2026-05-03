@@ -13,7 +13,9 @@ var appState = {
     segments: {},
     products: [],
     plannedChanges: {},
-    newProducts: []
+    newProducts: [],
+    geminiKey: '',
+    lastAiResponse: ''
 };
 
 // ============================================
@@ -71,6 +73,7 @@ var appState = {
             renderProductsTab();
             renderCompetitorsTab();
             renderSimulatorTab();
+            renderInsightsTab();
             // Verification log
             console.log('Parse complete. Total products:', appState.products.length);
             var companyCounts = {};

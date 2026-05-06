@@ -17,6 +17,7 @@
         <button class="tab-btn" data-tab="competitors">Competitors</button>
         <button class="tab-btn" data-tab="simulator">Simulator</button>
         <button class="tab-btn" data-tab="insights">Insights</button>
+        <button class="tab-btn" data-tab="performance">Performance Review</button>
     </nav>
 
     <main class="tab-content">
@@ -36,6 +37,16 @@
             </div>
 
             <div id="parse-summary" class="parse-summary hidden"></div>
+
+            <hr class="section-divider">
+            <h3 class="section-heading">Round History (for Performance Review)</h3>
+            <p class="tab-description" style="margin-bottom:1rem">Paste past Couriers below to save them for trend analysis across rounds.</p>
+            <div class="setup-form">
+                <textarea id="history-input" class="courier-textarea" style="min-height:120px" placeholder="Paste a past round's Courier here..." spellcheck="false"></textarea>
+                <button id="history-save-btn" class="btn-secondary">Parse &amp; Save to History</button>
+            </div>
+            <div id="history-status" class="parse-summary hidden"></div>
+            <div id="history-list"></div>
         </section>
 
         <section class="tab-panel" id="tab-products">
@@ -137,6 +148,12 @@
                 <div id="ai-response" class="ai-response hidden"></div>
             </div>
         </section>
+        <section class="tab-panel" id="tab-performance">
+            <h2>Performance Review</h2>
+            <p class="tab-description">Track trends and analyse performance across saved rounds.</p>
+            <div id="performance-empty" class="empty-state">Save at least 2 rounds in the Setup tab's Round History section to enable Performance Review.</div>
+            <div id="performance-content" class="hidden"></div>
+        </section>
     </main>
 
     <script src="helpers.js"></script>
@@ -146,6 +163,7 @@
     <script src="simulation.js"></script>
     <script src="simulator.js"></script>
     <script src="insights.js"></script>
+    <script src="performance.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

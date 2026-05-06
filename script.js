@@ -12,6 +12,9 @@ var appState = {
     myCompany: 'Andrews',
     segments: {},
     products: [],
+    financials: {},        // Financials from the latest parse (per company)
+    history: [],           // Array of round snapshots for Performance Review [{round, endDate, products, segments, financials}]
+    compareRounds: [],     // Which round numbers are currently checked in Performance Review filter
     plannedRevisions: {},  // { "Able": [{pfmn, size, mtbf, price, revisionDate}, ...], ... }
     newProducts: [],
     geminiKey: '',
@@ -37,9 +40,116 @@ var appState = {
 
     tabButtons.forEach(function(btn) {
         btn.addEventListener('click', function() {
-            switchTab(btn.getAttribute('data-tab'));
+            var tab = btn.getAttribute('data-tab');
+            switchTab(tab);
+            // Render Performance Review tab on-demand when clicked
+            if (tab === 'performance' && typeof renderPerformanceTab === 'function') {
+                renderPerformanceTab();
+            }
         });
     });
+})();
+
+// ============================================
+// Round History — Save/Remove for Performance Review
+// ============================================
+
+function saveToHistory(text) {
+    // Parses a Courier into a temporary appState, extracts a snapshot, saves to history.
+    // We swap appState temporarily so parseCourier writes to a fresh object.
+    var origState = appState;
+    var tempState = { round: null, upcomingRound: null, endDate: null, myCompany: 'Andrews', segments: {}, products: [], financials: {}, plannedRevisions: {}, newProducts: [], history: [], geminiKey: '', lastAiResponse: '' };
+    appState = tempState;
+    var warnings = [];
+    try {
+        parseCourier(text, warnings);
+        var snapshot = {
+            round: tempState.round,
+            endDate: tempState.endDate,
+            products: JSON.parse(JSON.stringify(tempState.products)),
+            segments: JSON.parse(JSON.stringify(tempState.segments)),
+            financials: JSON.parse(JSON.stringify(tempState.financials))
+        };
+        appState = origState; // restore original state
+        if (snapshot.round === null) return { success: false, error: 'Could not determine round number.' };
+        // Replace existing entry for same round, or add new
+        var existingIdx = appState.history.findIndex(function(h) { return h.round === snapshot.round; });
+        if (existingIdx !== -1) appState.history[existingIdx] = snapshot;
+        else appState.history.push(snapshot);
+        // Keep sorted by round number ascending
+        appState.history.sort(function(a, b) { return a.round - b.round; });
+        // Auto-add new round to compareRounds so it's checked by default
+        if (appState.compareRounds.indexOf(snapshot.round) === -1) {
+            appState.compareRounds.push(snapshot.round);
+            appState.compareRounds.sort(function(a, b) { return a - b; });
+        }
+        return { success: true, round: snapshot.round, warnings: warnings };
+    } catch (e) {
+        appState = origState;
+        return { success: false, error: e.message };
+    }
+}
+
+function removeFromHistory(round) {
+    appState.history = appState.history.filter(function(h) { return h.round !== round; });
+    // Also remove from compareRounds so the filter stays in sync
+    appState.compareRounds = appState.compareRounds.filter(function(r) { return r !== round; });
+}
+
+// ============================================
+// Setup Tab — History Section UI
+// ============================================
+
+(function initHistorySection() {
+    var saveBtn = document.getElementById('history-save-btn');
+    var textarea = document.getElementById('history-input');
+    var statusDiv = document.getElementById('history-status');
+    var listDiv = document.getElementById('history-list');
+
+    if (!saveBtn) return; // guard if element doesn't exist yet
+
+    saveBtn.addEventListener('click', function() {
+        var text = textarea.value.trim();
+        if (!text) { showSummary(statusDiv, 'error', 'Paste a Courier first.'); return; }
+        if (text.indexOf('CAPSTONE') === -1 || text.indexOf('Round:') === -1) {
+            showSummary(statusDiv, 'error', 'This doesn\u2019t look like a Capsim Courier.');
+            return;
+        }
+        var result = saveToHistory(text);
+        if (result.success) {
+            showSummary(statusDiv, 'success', 'Round ' + result.round + ' saved to history.');
+            textarea.value = '';
+            renderHistoryList();
+            // Re-render Performance Review tab if it has enough data
+            if (typeof renderPerformanceTab === 'function') renderPerformanceTab();
+        } else {
+            showSummary(statusDiv, 'error', 'Failed: ' + result.error);
+        }
+    });
+
+    renderHistoryList();
+
+    function renderHistoryList() {
+        if (!listDiv) return;
+        if (appState.history.length === 0) {
+            listDiv.innerHTML = '<p class="empty-state" style="padding:0.5rem 0;font-size:0.85rem">No rounds saved yet.</p>';
+            return;
+        }
+        var h = '';
+        appState.history.forEach(function(snap) {
+            h += '<div class="history-item">';
+            h += '<span>R' + snap.round + ' \u2014 ' + (snap.endDate || '?') + '</span>';
+            h += '<button class="btn-danger history-remove-btn" data-round="' + snap.round + '">Remove</button>';
+            h += '</div>';
+        });
+        listDiv.innerHTML = h;
+        listDiv.querySelectorAll('.history-remove-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                removeFromHistory(parseInt(btn.getAttribute('data-round')));
+                renderHistoryList();
+            });
+        });
+    }
 })();
 
 // ============================================

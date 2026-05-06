@@ -33,6 +33,7 @@ function parseCourier(text, warnings) {
     parseProductionAnalysis(lines, warnings);
     parseSegmentPages(lines, warnings);
     parsePerceptualMap(lines, warnings);
+    appState.financials = parseFinancials(lines, warnings);
 }
 
 // --- Round and Date ---
@@ -345,4 +346,67 @@ function parsePerceptualMap(lines, warnings) {
             }
         }
     }
+}
+
+// --- Financials (Page 1 & 2) ---
+// Extracts financial metrics for all 6 companies from "Selected Financial Statistics"
+// and stock prices from "Stock Market Summary".
+
+function parseFinancials(lines, warnings) {
+    var financials = {};
+    COMPANIES.forEach(function(c) { financials[c] = {}; });
+
+    // --- Selected Financial Statistics (Page 1) ---
+    var fsStart = -1;
+    for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('Selected Financial Statistics') !== -1) { fsStart = i + 1; break; }
+    }
+    if (fsStart === -1) { warnings.push('Could not find Financial Statistics.'); return financials; }
+
+    // Map metric names to our object keys
+    var metricMap = {
+        'ROS': 'ros', 'Asset Turnover': 'assetTurnover', 'ROA': 'roa', 'ROE': 'roe',
+        'Emergency Loan': 'emergencyLoan', 'Sales': 'sales', 'EBIT': 'ebit',
+        'Profits': 'profit', 'Cumulative Profit': 'cumulativeProfit'
+    };
+
+    for (var i = fsStart; i < Math.min(fsStart + 20, lines.length); i++) {
+        var line = lines[i];
+        if (line.indexOf('CAPSTONE') !== -1) break;
+        var cols = line.split('\t');
+        var label = cols[0] ? cols[0].trim() : '';
+        var matchedKey = null;
+        Object.keys(metricMap).forEach(function(mk) {
+            if (label.indexOf(mk) === 0) matchedKey = metricMap[mk];
+        });
+        if (!matchedKey) continue;
+        for (var c = 0; c < COMPANIES.length; c++) {
+            var val = cols[c + 1] ? cols[c + 1].trim() : '0';
+            // Percentage metrics vs dollar metrics
+            if (matchedKey === 'ros' || matchedKey === 'roa' || matchedKey === 'roe' || matchedKey === 'assetTurnover') {
+                financials[COMPANIES[c]][matchedKey] = parseFloatSafe(val.replace('%', ''));
+            } else {
+                // Handle parentheses for negative: ($2,225,417) -> -2225417
+                var cleaned = val.replace(/\(([^)]+)\)/, '-$1');
+                financials[COMPANIES[c]][matchedKey] = parseDollar(cleaned);
+            }
+        }
+    }
+
+    // --- Stock Prices (Page 2 — Stock Market Summary) ---
+    var smStart = -1;
+    for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('Stock Market Summary') !== -1) { smStart = i + 1; break; }
+    }
+    if (smStart !== -1) {
+        for (var i = smStart; i < Math.min(smStart + 15, lines.length); i++) {
+            var cols = lines[i].split('\t');
+            var company = cols[0] ? cols[0].trim() : '';
+            if (COMPANIES.indexOf(company) !== -1) {
+                financials[company].stockPrice = parseDollar(cols[1]);
+            }
+        }
+    }
+
+    return financials;
 }

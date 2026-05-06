@@ -232,10 +232,12 @@ function buildTrendSvg(metricKey) {
         var x = xPos(idx);
         svg += '<text x="' + x + '" y="' + (H - 10) + '" text-anchor="middle" font-size="10" fill="#374151">R' + snap.round + '</text>';
     });
+    // Distinct colour per company so lines are distinguishable
+    var COMPANY_COLORS = { Andrews:'#2563eb', Baldwin:'#f59e0b', Chester:'#10b981', Digby:'#8b5cf6', Erie:'#ef4444', Ferris:'#ec4899' };
     // Lines per company
     PERF_COMPANIES.forEach(function(co) {
-        var color = co === 'Andrews' ? '#2563eb' : '#9ca3af';
-        var width = co === 'Andrews' ? '2.5' : '1';
+        var color = COMPANY_COLORS[co] || '#9ca3af';
+        var width = co === 'Andrews' ? '2.5' : '1.5';
         var points = [];
         filtered.forEach(function(snap, idx) {
             var val = snap.financials[co] ? snap.financials[co][metricKey] || 0 : 0;
@@ -269,8 +271,10 @@ function renderComparisonTable() {
     h += '<div class="table-wrap"><table class="data-table"><thead><tr><th>Company</th>';
     filtered.forEach(function(snap) { h += '<th>R' + snap.round + '</th>'; });
     h += '</tr></thead><tbody>';
+    var TABLE_COLORS = { Andrews:'#2563eb', Baldwin:'#f59e0b', Chester:'#10b981', Digby:'#8b5cf6', Erie:'#ef4444', Ferris:'#ec4899' };
     PERF_COMPANIES.forEach(function(co) {
-        var cls = co === 'Andrews' ? ' style="font-weight:700;color:#2563eb"' : '';
+        var weight = co === 'Andrews' ? 'font-weight:700;' : '';
+        var cls = ' style="' + weight + 'color:' + (TABLE_COLORS[co] || '#374151') + '"';
         h += '<tr' + cls + '><td>' + co + '</td>';
         filtered.forEach(function(snap) {
             var val = snap.financials[co] ? snap.financials[co].sales || 0 : 0;

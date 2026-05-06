@@ -41,7 +41,7 @@ function renderPerformanceTab() {
     html += renderRoundFilter();
     html += '<div id="perf-sections">';
     html += renderTrendChart();
-    html += renderComparisonTable();
+    html += '<div id="perf-table-container">' + renderComparisonTable('sales') + '</div>';
     html += renderDeterministicInsights();
     html += renderRoundCards();
     html += renderAiReview();
@@ -160,8 +160,10 @@ function attachFilterListenersPerf() {
             // Re-render sections only (not the filter itself)
             var sections = document.getElementById('perf-sections');
             if (sections) {
-                sections.innerHTML = renderTrendChart() + renderComparisonTable() + renderDeterministicInsights() + renderRoundCards();
+                var currentMetric = document.getElementById('perf-metric-select') ? document.getElementById('perf-metric-select').value : 'sales';
+                sections.innerHTML = renderTrendChart() + '<div id="perf-table-container">' + renderComparisonTable(currentMetric) + '</div>' + renderDeterministicInsights() + renderRoundCards() + renderAiReview();
                 attachMetricDropdownListener();
+                attachAiReviewListener();
             }
         });
     });
@@ -191,8 +193,11 @@ function attachMetricDropdownListener() {
     var sel = document.getElementById('perf-metric-select');
     if (!sel) return;
     sel.addEventListener('change', function() {
+        // Update both the chart and the comparison table when metric changes
         var container = document.getElementById('perf-chart-container');
         if (container) container.innerHTML = buildTrendSvg(sel.value);
+        var tableContainer = document.getElementById('perf-table-container');
+        if (tableContainer) tableContainer.innerHTML = renderComparisonTable(sel.value);
     });
 }
 
@@ -264,10 +269,14 @@ function formatMetricShort(val, key) {
 }
 
 // --- Section 2: Comparison Table ---
-function renderComparisonTable() {
+// Accepts a metricKey parameter so it updates when the dropdown changes
+function renderComparisonTable(metricKey) {
+    if (!metricKey) metricKey = 'sales';
     var filtered = getFilteredHistory();
-    var metricKey = 'sales'; // default, could be dynamic later
-    var h = '<h3 class="section-heading">Comparison Table (Sales)</h3>';
+    // Find the label for the selected metric
+    var metricLabel = 'Sales';
+    PERF_METRICS.forEach(function(m) { if (m.key === metricKey) metricLabel = m.label; });
+    var h = '<h3 class="section-heading">Comparison Table (' + metricLabel + ')</h3>';
     h += '<div class="table-wrap"><table class="data-table"><thead><tr><th>Company</th>';
     filtered.forEach(function(snap) { h += '<th>R' + snap.round + '</th>'; });
     h += '</tr></thead><tbody>';
@@ -277,8 +286,15 @@ function renderComparisonTable() {
         var cls = ' style="' + weight + 'color:' + (TABLE_COLORS[co] || '#374151') + '"';
         h += '<tr' + cls + '><td>' + co + '</td>';
         filtered.forEach(function(snap) {
-            var val = snap.financials[co] ? snap.financials[co].sales || 0 : 0;
-            h += '<td>$' + (val / 1000000).toFixed(1) + 'M</td>';
+            var val = snap.financials[co] ? snap.financials[co][metricKey] || 0 : 0;
+            // Format based on metric type
+            if (metricKey === 'ros' || metricKey === 'roa' || metricKey === 'roe') {
+                h += '<td>' + val.toFixed(1) + '%</td>';
+            } else if (metricKey === 'stockPrice') {
+                h += '<td>$' + val.toFixed(2) + '</td>';
+            } else {
+                h += '<td>$' + (val / 1000000).toFixed(1) + 'M</td>';
+            }
         });
         h += '</tr>';
     });
